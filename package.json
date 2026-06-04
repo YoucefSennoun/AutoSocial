@@ -1,0 +1,54 @@
+{
+  "name": "autosocial-studio",
+  "version": "0.1.0",
+  "description": "Local multi-account social media automation dashboard for TikTok, Instagram, and YouTube",
+  "private": true,
+  "main": "src/cli.js",
+  "scripts": {
+    "start": "node src/dashboard-server.js",
+    "check": "npm run check:syntax && npm test",
+    "check:syntax": "node scripts/check-syntax.js",
+    "doctor": "node scripts/doctor.js",
+    "test": "node --test",
+    "login": "node src/cli.js login",
+    "post": "node src/cli.js post",
+    "daemon": "node src/cli.js daemon",
+    "dashboard": "node src/dashboard-server.js",
+    "uniquify": "node src/cli.js uniquify",
+    "video-info": "node src/cli.js video-info",
+    "autodownload": "node autodownload/watcher.js"
+  },
+  "keywords": [
+    "automation",
+    "dashboard",
+    "creator-tools",
+    "marketing",
+    "social-media",
+    "indie-hackers",
+    "ai-builders",
+    "playwright",
+    "tiktok",
+    "instagram",
+    "youtube"
+  ],
+  "author": "AutoSocial Studio contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Katzca/AutoSocial.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Katzca/AutoSocial/issues"
+  },
+  "homepage": "https://github.com/Katzca/AutoSocial#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
+    "playwright": "^1.58.2",
+    "yargs": "^18.0.0"
+  }
+}

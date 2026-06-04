@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# Browser profiles (session data)
+.profile/
+.profile-instagram/
+.profile-youtube/
+.profiles/
+
+# Scheduler and runtime state
+.scheduler-state/
+*-state.json
+
+# Queue and render outputs
+queue/*/*/posted/
+queue/*/*/failed/
+queue/uniquify-output/
+
+# Auto-download runtime data
+autodownload/downloads/
+autodownload/profile_downloads/
+autodownload/archive.txt
+autodownload/yt-dlp.exe
+autodownload/info.json
+autodownload/*.info.json
+
+# Legacy/manual runtime folders
+downloads/
+user-assets/
+
+# Local notes
+.local/
+
+# Debug screenshots
+last-*.png
+.dashboard.*.log
+
+# Saved browser pages (dev reference, root-level only)
+/*.html
+/*_files/
+
+# Media files generated or dropped into runtime workflows
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+queue/**/*.description
+queue/**/*.txt
+
+# Keep docs visible
+!README.md
+!SETUP.md

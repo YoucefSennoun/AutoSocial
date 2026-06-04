@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoSocial Studio</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <!-- Using a CDN for icons for the premium look (Phosphor Icons or similar) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">A</div>
+        <div class="brand-meta">
+          <h1>AutoSocial</h1>
+          <div class="brand-account-switcher">
+            <select id="brandSelect" class="control-input brand-select"></select>
+            <button id="addBrandBtn" type="button" class="control-btn-small brand-add-btn" title="Add brand">
+              <i class="ph ph-plus"></i>
+            </button>
+          </div>
+          <div id="brandCreateRow" class="brand-create-row hidden">
+            <input id="brandNameInput" type="text" class="control-input brand-name-input"
+              placeholder="New brand name" />
+            <button id="saveBrandBtn" type="button" class="control-btn-small primary brand-create-btn">
+              Add
+            </button>
+            <button id="cancelBrandBtn" type="button" class="control-btn-small brand-create-btn">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="overview">
+          <i class="ph ph-squares-four"></i>
+          <span>Overview</span>
+        </button>
+
+        <div class="nav-label">Auto Post</div>
+        <button class="nav-item" data-view="tiktok">
+          <i class="ph ph-tiktok-logo"></i>
+          <span>TikTok</span>
+        </button>
+        <button class="nav-item" data-view="instagram">
+          <i class="ph ph-instagram-logo"></i>
+          <span>Instagram</span>
+        </button>
+        <button class="nav-item" data-view="youtube">
+          <i class="ph ph-youtube-logo"></i>
+          <span>YouTube</span>
+        </button>
+
+        <div class="nav-label">Tools</div>
+        <button class="nav-item" data-view="uniquifier">
+          <i class="ph ph-fingerprint"></i>
+          <span>Video Uniquifier</span>
+        </button>
+        <button class="nav-item" data-view="autodownload">
+          <i class="ph ph-download-simple"></i>
+          <span>Auto Download</span>
+        </button>
+        <button class="nav-item" data-view="profile-download">
+          <i class="ph ph-download"></i>
+          <span>Profile Downloader</span>
+        </button>
+
+        <div class="nav-label">Management</div>
+        <button class="nav-item" data-view="accounts">
+          <i class="ph ph-users"></i>
+          <span>Accounts</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <i class="ph ph-gear"></i>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="connection-status" id="statusBadge">
+          <div class="connection-dot"></div>
+          <span>System Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- View: Overview -->
+      <section id="view-overview" class="view-section active">
+        <header class="view-header">
+          <h2>Dashboard Overview</h2>
+        </header>
+
+        <!-- Totals Row -->
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-film-strip"></i></div>
+            <div class="stat-value" id="pendingCount">0</div>
+            <div class="stat-label">Total Pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success"><i class="ph ph-check-circle"></i></div>
+            <div class="stat-value success" id="successCount">0</div>
+            <div class="stat-label">Total Posted</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon error"><i class="ph ph-warning-circle"></i></div>
+            <div class="stat-value error" id="failedCount">0</div>
+            <div class="stat-label">Total Failed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ph ph-users-three"></i></div>
+            <div class="stat-value" id="activeAccountsCount">0</div>
+            <div class="stat-label">Active Schedulers</div>
+          </div>
+        </div>
+
+        <!-- Profiles container (JS populates per-profile sections) -->
+        <div id="overviewProfilesContainer"></div>
+
+        <!-- Recent Logs -->
+        <div class="card full-width" style="margin-top:20px;">
+          <div class="card-title">Live System Logs</div>
+          <div class="logs-container" id="logsContainer">
+            <!-- JS Populates this -->
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Accounts -->
+      <section id="view-accounts" class="view-section">
+        <header class="view-header">
+          <h2>Account Management <span id="activeBrandLabel" style="color:var(--text-muted); font-size:14px;"></span>
+          </h2>
+        </header>
+
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Session</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accountsTableBody">
+              <!-- JS Populates this -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- View: TikTok -->
+      <section id="view-tiktok" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:linear-gradient(135deg, #00f2ea, #ff0050); width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-tiktok-logo"></i></div>
+            <div>
+              <h2 style="margin:0;">TikTok Auto Post</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your TikTok schedule and queue</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="ttRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="ttStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="ttStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="ttPendingCount">-</div>
+              <div class="stat-label">Pending TikToks</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="ttPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="ttFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="ttSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">TikTok Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="ttPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="ttPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="ttPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="ttPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="ttPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="ttCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="ttUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="ttTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="ttLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; flex-direction:column; gap:16px; margin-top:16px; border-top:1px solid var(--border-color); padding-top:16px;">
+              <label class="switch-container">
+                <input type="checkbox" id="ttInstantPostToggle">
+                <span class="slider"></span>
+                <span class="switch-label">
+                  <strong>Instant Post Mode</strong>
+                  <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">Skips queue intervals and
+                    Auto-Add Sound to post immediately when video appears in pending folder.</div>
+                </span>
+              </label>
+
+              <label class="switch-container">
+                <input type="checkbox" id="ttAutoAddSoundToggle">
+                <span class="slider"></span>
+                <span class="switch-label">
+                  <strong>Auto-Add Trending Sound</strong>
+                  <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">Automatically searches and
+                    applies a background sound during upload to satisfy TikTok algorithm. (Ignored during Instant Post)
+                  </div>
+                </span>
+              </label>
+
+              <div class="form-group">
+                <label>Sound Search Query</label>
+                <div class="input-group">
+                  <input id="ttSoundQueryInput" type="text" class="control-input"
+                    placeholder="Optional TikTok sound search term">
+                  <button id="ttSoundQuerySaveBtn" class="control-btn-small">
+                    Save Sound
+                  </button>
+                </div>
+              </div>
+
+              <label class="switch-container">
+                <input type="checkbox" id="ttRandomQueueToggle">
+                <span class="slider"></span>
+                <span class="switch-label">
+                  <strong>Random Queue Order (Global)</strong>
+                  <div style="font-size:12px; color:var(--text-muted); font-weight:normal;">Chooses a random pending video each run instead of the first file alphabetically. Captions still stay attached to the selected video.</div>
+                </span>
+              </label>
+            </div>
+
+            <div class="card full-width">
+              <div class="card-title">TikTok Queue</div>
+              <div class="queue-list" id="ttQueueList"></div>
+            </div>
+
+            <div class="card full-width">
+              <div class="card-title">TikTok Live Logs</div>
+              <div class="logs-container" id="ttLogsContainer"></div>
+            </div>
+          </div>
+      </section>
+
+      <!-- View: Instagram -->
+      <section id="view-instagram" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); width:40px; height:40px; font-size:24px;">
+              <i class="ph ph-instagram-logo"></i>
+            </div>
+            <div>
+              <h2 style="margin:0;">Instagram Reels</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your Reels schedule</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="igRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="igStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="igStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="igPendingCount">-</div>
+              <div class="stat-label">Pending Reels</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="igPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="igFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="igSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Instagram Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="igPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="igPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="igPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="igPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="igPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="igCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="igUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="igTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="igLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color);">
+              <label class="toggle-switch">
+                <input type="checkbox" id="igInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post</div>
+                <div style="color:var(--text-muted); font-size:12px;">Post immediately when a new file lands in the
+                  queue</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="igRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one. Captions still follow the chosen video.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Instagram Queue</div>
+            <div class="queue-list" id="igQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Instagram Live Logs</div>
+            <div class="logs-container" id="igLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: YouTube -->
+      <section id="view-youtube" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon" style="background:#ff0000; width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-youtube-logo"></i></div>
+            <div>
+              <h2 style="margin:0;">YouTube Shorts</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your Shorts schedule</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="ytRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="ytStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="ytStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="ytPendingCount">-</div>
+              <div class="stat-label">Pending Shorts</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="ytPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="ytFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="ytSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">YouTube Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="ytPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="ytPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="ytPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="ytPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="ytPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="ytCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="ytUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="ytTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="ytLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color);">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ytInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post</div>
+                <div style="color:var(--text-muted); font-size:12px;">Post immediately when a new file lands in the
+                  queue</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="ytRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one. Captions still follow the chosen video.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">YouTube Queue</div>
+            <div class="queue-list" id="ytQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">YouTube Live Logs</div>
+            <div class="logs-container" id="ytLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Video Uniquifier -->
+      <section id="view-uniquifier" class="view-section">
+        <header class="view-header">
+          <h2>Video Uniquifier</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="uniqStartBtn" class="control-btn-small success">
+              <i class="ph ph-play-circle"></i> Start Uniquifying
+            </button>
+            <button id="uniqStopBtn" class="control-btn-small danger">
+              <i class="ph ph-stop-circle"></i> Stop
+            </button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="card full-width">
+            <div class="card-title">Folders</div>
+            <div class="form-group">
+              <label>Input Folder (put original videos here)</label>
+              <div class="input-group">
+                <input id="uniqInputDir" class="control-input" type="text" placeholder="Input folder path">
+                <button id="uniqOpenInputBtn" class="control-btn-small">
+                  <i class="ph ph-folder-open"></i> Open
+                </button>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <label>Output Folder (uniquified videos will be saved here)</label>
+              <div class="input-group">
+                <input id="uniqOutputDir" class="control-input" type="text" placeholder="Output folder path">
+                <button id="uniqOpenOutputBtn" class="control-btn-small">
+                  <i class="ph ph-folder-open"></i> Open
+                </button>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <label>Logo Image (optional overlay)</label>
+              <input id="uniqLogoImage" class="control-input" type="text"
+                placeholder="user-assets/logo.png or C:\path\to\logo.png">
+            </div>
+          </div>
+
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="uniqState">-</div>
+              <div class="stat-label">Batch State</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="uniqProgress">0 / 0</div>
+              <div class="stat-label">Progress</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="uniqSucceeded">0</div>
+              <div class="stat-label">Succeeded</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="uniqFailed">0</div>
+              <div class="stat-label">Failed</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Input Videos</div>
+            <div class="queue-list" id="uniqInputFiles"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Output Videos</div>
+            <div class="queue-list" id="uniqOutputFiles"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Uniquifier Logs</div>
+            <div class="logs-container" id="uniqLogs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Settings -->
+      <section id="view-settings" class="view-section">
+        <header class="view-header">
+          <h2>Settings</h2>
+        </header>
+
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card-title">Content Defaults</div>
+            <div class="form-group">
+              <label>Default Caption</label>
+              <textarea id="defaultCaptionInput" class="control-input" rows="4"
+                placeholder="Optional fallback caption when no sidecar file exists"></textarea>
+            </div>
+            <button id="defaultCaptionSaveBtn" class="control-btn-small primary" style="margin-top:8px;">
+              <i class="ph ph-floppy-disk"></i> Save Caption
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Auto Download -->
+      <section id="view-autodownload" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon"
+              style="background:linear-gradient(135deg, #6366f1, #a855f7); width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-download-simple"></i></div>
+            <div>
+              <h2 style="margin:0;">Auto Download</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Watch a TikTok channel and auto-queue new
+                videos</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="adStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="adStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="adWatcherState">-</div>
+              <div class="stat-label">Watcher State</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="adTotalDownloaded">0</div>
+              <div class="stat-label">Videos Downloaded</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="adLastCheck">Never</div>
+              <div class="stat-label">Last Checked</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Download Settings</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+              <div class="form-group">
+                <label>TikTok Channel / Username</label>
+                <input type="text" id="adChannel" class="control-input" placeholder="@username or full URL">
+              </div>
+              <div class="form-group">
+                <label>Check Interval (minutes)</label>
+                <input type="number" id="adInterval" class="control-input" min="1" value="10">
+              </div>
+              <div class="form-group">
+                <label>Max Videos Per Check</label>
+                <input type="number" id="adMaxVideos" class="control-input" min="1" value="5">
+              </div>
+              <div class="form-group">
+                <label>Post To Platforms</label>
+                <div style="display:flex; gap:12px; align-items:center; padding-top:6px;">
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatTiktok" value="tiktok" checked> TikTok
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatInstagram" value="instagram"> Instagram
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatYoutube" value="youtube"> YouTube
+                  </label>
+                </div>
+              </div>
+            </div>
+            <button id="adSaveSettingsBtn" class="control-btn-small primary" style="margin-top:8px;"><i
+                class="ph ph-floppy-disk"></i> Save Settings</button>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Download Live Logs</div>
+            <div class="logs-container" id="adLogsContainer" style="height:320px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile downloader view -->
+      <section id="view-profile-download" class="view-section">
+        <div class="view-header">
+          <h1>Profile Downloader</h1>
+          <p>Scrape specific TikTok channels and filter by view count. Videos will be saved to <code
+              style="padding: 2px 4px; background: rgba(255,255,255,0.1); border-radius: 4px;">autodownload/profile_downloads/</code>.
+          </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+          <h2 class="card-title"><i class="ph ph-sliders"></i> Configuration</h2>
+          <div class="settings-grid">
+            <div class="form-group">
+              <label>TikTok Channel</label>
+              <input type="text" id="pdChannel" class="control-input" placeholder="e.g. @username">
+            </div>
+            <div class="form-group">
+              <label>Max Videos to Scan</label>
+              <input type="number" id="pdMaxVideos" class="control-input" min="0" placeholder="0 = All Videos"
+                value="0">
+            </div>
+            <div class="form-group">
+              <label>Min Views Filter</label>
+              <input type="number" id="pdMinViews" class="control-input" min="0" placeholder="0 = No filter"
+                value="0">
+            </div>
+          </div>
+          <div style="margin-top:20px; display:flex; gap:12px;">
+            <button id="pdStartBtn" class="control-btn primary">
+              <i class="ph ph-play"></i> Start Scraping
+            </button>
+            <button id="pdScanBtn" class="control-btn neutral" style="border: 1px solid var(--border-color);">
+              <i class="ph ph-magnifying-glass"></i> Check Videos
+            </button>
+            <button id="pdOpenFolderBtn" class="control-btn neutral">
+              <i class="ph ph-folder-open"></i> Open Downloads
+            </button>
+          </div>
+        </div>
+
+        <div class="two-col-layout">
+          <!-- Live Logs -->
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+              <h2 class="card-title">Live Logs</h2>
+              <span id="pdStatusBadge" class="status-badge">Idle</span>
+            </div>
+            <div class="logs-container" id="pdLogsContainer">
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+
+</html>
