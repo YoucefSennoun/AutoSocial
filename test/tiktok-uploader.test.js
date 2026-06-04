@@ -90,3 +90,31 @@ test("TikTok publish candidate scores bottom Post button above sidebar Posts", (
   assert.equal(getPublishCandidateScore(sidebar), -1);
   assert.ok(getPublishCandidateScore(bottomButton) > 0);
 });
+
+test("TikTok secondary confirm terms reject plain Post and sidebar Posts", () => {
+  const sidebar = {
+    disabled: false,
+    inNavigation: false,
+    rect: { left: 80, right: 190, top: 248, width: 110, height: 36 },
+    role: "button",
+    tagName: "button",
+    text: "Posts",
+    viewportHeight: 940,
+    viewportWidth: 1154,
+  };
+  const bottomButton = {
+    className: "TUXButton TUXButton--primary",
+    disabled: false,
+    inNavigation: false,
+    rect: { left: 340, right: 540, top: 884, width: 200, height: 38 },
+    role: "",
+    tagName: "button",
+    text: "Post",
+    viewportHeight: 940,
+    viewportWidth: 1154,
+  };
+  const secondaryTerms = ["publish", "confirm", "continue"];
+
+  assert.equal(getPublishCandidateScore(sidebar, secondaryTerms), -1);
+  assert.equal(getPublishCandidateScore(bottomButton, secondaryTerms), -1);
+});

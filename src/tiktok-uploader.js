@@ -240,7 +240,7 @@ async function getPublishCandidateInfo(candidate) {
   });
 }
 
-async function clickFirstLikelyPublishLocator(page, locator) {
+async function clickFirstLikelyPublishLocator(page, locator, publishTerms = uiLabels.terms("tiktokPublish")) {
   const total = await locator.count();
   if (total === 0) {
     return false;
@@ -255,7 +255,7 @@ async function clickFirstLikelyPublishLocator(page, locator) {
     }
 
     const info = await getPublishCandidateInfo(candidate).catch(() => null);
-    const score = getPublishCandidateScore(info);
+    const score = getPublishCandidateScore(info, publishTerms);
     if (score < 0) {
       continue;
     }
@@ -954,16 +954,44 @@ function isLikelyPublishApiResponse(response) {
 }
 
 async function trySecondaryPublishConfirm(page) {
-  const confirmButtons = [
-    uiLabels.pattern("tiktokConfirm"),
-  ];
+  const confirmTerms = uiLabels
+    .terms("tiktokConfirm")
+    .filter((term) => normalizeUiText(term) !== "post");
+  const confirmPattern = new RegExp(confirmTerms.map(escapeRegExp).join("|"), "i");
+  const scopedConfirmLocator = page
+    .locator(
+      [
+        "[role='dialog']",
+        "[aria-modal='true']",
+        "[class*='modal' i]",
+        "[class*='dialog' i]",
+        "[class*='popover' i]",
+        "[class*='drawer' i]",
+      ].join(", ")
+    )
+    .locator("button, [role='button']")
+    .filter({ hasText: confirmPattern });
+  const scopedClicked = await clickFirstLikelyPublishLocator(
+    page,
+    scopedConfirmLocator,
+    confirmTerms
+  );
+  if (scopedClicked) {
+    await page.waitForTimeout(500);
+    return true;
+  }
 
-  for (const nameRegex of confirmButtons) {
-    const clicked = await clickFirstVisibleButton(page, nameRegex, 800);
-    if (clicked) {
-      await page.waitForTimeout(500);
-      return true;
-    }
+  const confirmLocator = page.getByRole("button", {
+    name: confirmPattern,
+  });
+  const clicked = await clickFirstLikelyPublishLocator(
+    page,
+    confirmLocator,
+    confirmTerms
+  );
+  if (clicked) {
+    await page.waitForTimeout(500);
+    return true;
   }
 
   return false;
