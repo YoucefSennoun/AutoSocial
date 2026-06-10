@@ -76,6 +76,10 @@
         </button>
 
         <div class="nav-label">Management</div>
+        <button class="nav-item" data-view="setup">
+          <i class="ph ph-list-checks"></i>
+          <span>Setup</span>
+        </button>
         <button class="nav-item" data-view="accounts">
           <i class="ph ph-users"></i>
           <span>Accounts</span>
@@ -140,6 +144,76 @@
       </section>
 
       <!-- View: Accounts -->
+      <section id="view-setup" class="view-section">
+        <header class="view-header">
+          <div>
+            <h2>First-Run Setup</h2>
+            <span class="view-subtitle">Check your local machine, login sessions, and queue folders.</span>
+          </div>
+          <button id="setupRefreshBtn" class="control-btn-small">
+            <i class="ph ph-arrows-clockwise"></i> Refresh
+          </button>
+        </header>
+
+        <div class="setup-layout">
+          <div class="setup-summary-card">
+            <div class="setup-summary-icon" id="setupSummaryIcon">
+              <i class="ph ph-circle-notch"></i>
+            </div>
+            <div>
+              <div class="setup-summary-label">Setup status</div>
+              <div class="setup-summary-title" id="setupSummaryTitle">Checking local setup</div>
+              <div class="setup-summary-meta" id="setupSummaryMeta">This runs local checks only.</div>
+            </div>
+          </div>
+
+          <div class="setup-metrics" id="setupMetrics">
+            <div class="setup-metric">
+              <span class="setup-metric-value">-</span>
+              <span class="setup-metric-label">Ready</span>
+            </div>
+            <div class="setup-metric">
+              <span class="setup-metric-value">-</span>
+              <span class="setup-metric-label">Warnings</span>
+            </div>
+            <div class="setup-metric">
+              <span class="setup-metric-value">-</span>
+              <span class="setup-metric-label">Blocking</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-grid">
+          <div class="card setup-card">
+            <div class="card-title">Local Health</div>
+            <div id="setupChecksList" class="setup-check-list">
+              <div class="setup-empty">Loading setup checks...</div>
+            </div>
+          </div>
+
+          <div class="card setup-card">
+            <div class="card-title">Login Sessions</div>
+            <div id="setupSessionsList" class="setup-check-list">
+              <div class="setup-empty">Loading sessions...</div>
+            </div>
+          </div>
+
+          <div class="card setup-card full-width">
+            <div class="card-title">Where to Put Videos</div>
+            <div id="setupFoldersList" class="setup-folder-list">
+              <div class="setup-empty">Loading folders...</div>
+            </div>
+          </div>
+
+          <div class="card setup-card full-width">
+            <div class="card-title">Suggested First Run</div>
+            <div id="setupNextSteps" class="setup-steps">
+              <div class="setup-empty">Loading next steps...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="view-accounts" class="view-section">
         <header class="view-header">
           <h2>Account Management <span id="activeBrandLabel" style="color:var(--text-muted); font-size:14px;"></span>

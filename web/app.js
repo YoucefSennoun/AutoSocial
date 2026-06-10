@@ -45,6 +45,7 @@ const Router = {
     document.querySelectorAll(".view-section").forEach((sec) => {
       sec.classList.toggle("active", sec.id === `view-${viewName}`);
     });
+    document.dispatchEvent(new CustomEvent("autosocial:viewchange", { detail: { viewName } }));
   },
 };
 
@@ -72,6 +73,15 @@ const UI = {
     cancelBrandBtn: document.getElementById("cancelBrandBtn"),
     activeBrandLabel: document.getElementById("activeBrandLabel"),
     statusBadge: document.getElementById("statusBadge"),
+    setupRefreshBtn: document.getElementById("setupRefreshBtn"),
+    setupSummaryIcon: document.getElementById("setupSummaryIcon"),
+    setupSummaryTitle: document.getElementById("setupSummaryTitle"),
+    setupSummaryMeta: document.getElementById("setupSummaryMeta"),
+    setupMetrics: document.getElementById("setupMetrics"),
+    setupChecksList: document.getElementById("setupChecksList"),
+    setupSessionsList: document.getElementById("setupSessionsList"),
+    setupFoldersList: document.getElementById("setupFoldersList"),
+    setupNextSteps: document.getElementById("setupNextSteps"),
 
     pendingCount: document.getElementById("pendingCount"),
     successCount: document.getElementById("successCount"),
@@ -286,6 +296,19 @@ const UI = {
         }
       });
     }
+    if (this.els.setupRefreshBtn) {
+      this.els.setupRefreshBtn.addEventListener("click", () => this.refreshSetupHealth());
+    }
+    if (this.els.setupFoldersList) {
+      this.els.setupFoldersList.addEventListener("click", (event) =>
+        this.handleSetupFolderClick(event)
+      );
+    }
+    document.addEventListener("autosocial:viewchange", (event) => {
+      if (event.detail?.viewName === "setup") {
+        this.refreshSetupHealth();
+      }
+    });
 
     if (this.els.ttSoundQuerySaveBtn) {
       this.els.ttSoundQuerySaveBtn.addEventListener("click", () =>
@@ -524,8 +547,171 @@ const UI = {
     try {
       await API.post("/api/accounts/select", { accountId });
       await this.refresh();
+      if (this.isViewActive("setup")) {
+        await this.refreshSetupHealth();
+      }
     } catch (err) {
       alert(`Could not switch brand: ${err.message}`);
+    }
+  },
+
+  isViewActive(viewName) {
+    return document.getElementById(`view-${viewName}`)?.classList.contains("active");
+  },
+
+  statusMeta(status) {
+    const map = {
+      ok: { label: "Ready", icon: "ph-check-circle", className: "ok" },
+      warn: { label: "Needs attention", icon: "ph-warning-circle", className: "warn" },
+      fail: { label: "Blocked", icon: "ph-x-circle", className: "fail" },
+    };
+    return map[status] || map.warn;
+  },
+
+  async refreshSetupHealth() {
+    if (this.els.setupRefreshBtn) {
+      this.els.setupRefreshBtn.disabled = true;
+      this.els.setupRefreshBtn.innerHTML = '<i class="ph ph-circle-notch"></i> Checking';
+    }
+
+    try {
+      const health = await API.get("/api/setup/health");
+      this.renderSetupHealth(health);
+    } catch (err) {
+      if (this.els.setupSummaryTitle) this.els.setupSummaryTitle.textContent = "Setup check failed";
+      if (this.els.setupSummaryMeta) this.els.setupSummaryMeta.textContent = err.message;
+      if (this.els.setupChecksList) {
+        this.els.setupChecksList.innerHTML = `
+          <div class="setup-empty error">Could not load setup health: ${escapeHtml(err.message)}</div>
+        `;
+      }
+    } finally {
+      if (this.els.setupRefreshBtn) {
+        this.els.setupRefreshBtn.disabled = false;
+        this.els.setupRefreshBtn.innerHTML = '<i class="ph ph-arrows-clockwise"></i> Refresh';
+      }
+    }
+  },
+
+  renderSetupHealth(health) {
+    if (!health || typeof health !== "object") return;
+    const summary = this.statusMeta(health.overall);
+    const activeBrand = health.activeAccount?.name || "Default";
+    const updated = health.generatedAt ? new Date(health.generatedAt).toLocaleTimeString() : "just now";
+
+    if (this.els.setupSummaryIcon) {
+      this.els.setupSummaryIcon.className = `setup-summary-icon ${summary.className}`;
+      this.els.setupSummaryIcon.innerHTML = `<i class="ph ${summary.icon}"></i>`;
+    }
+    if (this.els.setupSummaryTitle) {
+      this.els.setupSummaryTitle.textContent =
+        health.overall === "ok" ? "This workstation is ready" : "Review setup items before posting";
+    }
+    if (this.els.setupSummaryMeta) {
+      this.els.setupSummaryMeta.textContent = `Active brand: ${activeBrand} - Last checked ${updated}`;
+    }
+    if (this.els.setupMetrics) {
+      const counts = health.counts || {};
+      this.els.setupMetrics.innerHTML = `
+        <div class="setup-metric">
+          <span class="setup-metric-value ok">${counts.ok ?? 0}</span>
+          <span class="setup-metric-label">Ready</span>
+        </div>
+        <div class="setup-metric">
+          <span class="setup-metric-value warn">${counts.warn ?? 0}</span>
+          <span class="setup-metric-label">Warnings</span>
+        </div>
+        <div class="setup-metric">
+          <span class="setup-metric-value fail">${counts.fail ?? 0}</span>
+          <span class="setup-metric-label">Blocking</span>
+        </div>
+      `;
+    }
+
+    if (this.els.setupChecksList) {
+      this.els.setupChecksList.innerHTML = (health.checks || [])
+        .map((check) => {
+          const meta = this.statusMeta(check.status);
+          return `
+            <div class="setup-check-item ${meta.className}">
+              <div class="setup-check-icon"><i class="ph ${meta.icon}"></i></div>
+              <div class="setup-check-body">
+                <div class="setup-check-title">${escapeHtml(check.label)}</div>
+                <div class="setup-check-detail">${escapeHtml(check.detail)}</div>
+                ${check.status === "ok" ? "" : `<div class="setup-check-action">${escapeHtml(check.action)}</div>`}
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    if (this.els.setupSessionsList) {
+      this.els.setupSessionsList.innerHTML = (health.sessions || [])
+        .map((session) => {
+          const meta = this.statusMeta(session.saved ? "ok" : "warn");
+          return `
+            <div class="setup-check-item ${meta.className}">
+              <div class="setup-check-icon"><i class="ph ${meta.icon}"></i></div>
+              <div class="setup-check-body">
+                <div class="setup-check-title">${escapeHtml(session.label)}</div>
+                <div class="setup-check-detail">${escapeHtml(session.saved ? "Saved session found" : "No saved session yet")}</div>
+                <div class="setup-path">${escapeHtml(session.profileDir)}</div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    if (this.els.setupFoldersList) {
+      this.els.setupFoldersList.innerHTML = (health.folders || [])
+        .map((folder) => {
+          const meta = this.statusMeta(folder.exists ? "ok" : "fail");
+          return `
+            <div class="setup-folder-item">
+              <div class="setup-folder-main">
+                <div class="setup-folder-title">
+                  <span class="setup-check-icon ${meta.className}"><i class="ph ${meta.icon}"></i></span>
+                  ${escapeHtml(folder.label)}
+                </div>
+                <div class="setup-check-detail">${escapeHtml(folder.hint)}</div>
+                <div class="setup-path">${escapeHtml(folder.path)}</div>
+                <div class="setup-folder-meta">${folder.pendingCount ?? 0} video file(s) - ${escapeHtml((folder.supported || []).join(", "))}</div>
+              </div>
+              <button class="control-btn-small" data-setup-folder="${escapeHtml(folder.key)}">
+                <i class="ph ph-folder-open"></i> Open
+              </button>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    if (this.els.setupNextSteps) {
+      this.els.setupNextSteps.innerHTML = (health.nextSteps || [])
+        .map(
+          (step, index) => `
+            <div class="setup-step">
+              <span class="setup-step-number">${index + 1}</span>
+              <span>${escapeHtml(step)}</span>
+            </div>
+          `
+        )
+        .join("");
+    }
+  },
+
+  async handleSetupFolderClick(event) {
+    const button = event.target.closest("button[data-setup-folder]");
+    if (!button) return;
+    button.disabled = true;
+    try {
+      await API.post("/api/setup/open-folder", { key: button.dataset.setupFolder });
+    } catch (err) {
+      alert(`Could not open folder: ${err.message}`);
+    } finally {
+      button.disabled = false;
     }
   },
 

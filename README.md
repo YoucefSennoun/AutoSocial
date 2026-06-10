@@ -40,6 +40,8 @@ local control plane.
 ## Features
 
 - Manage multiple brands/accounts with isolated queues and browser sessions.
+- Use the First-Run Setup page to verify local dependencies, login sessions,
+  and queue folders.
 - Post queued videos to TikTok, Instagram, and YouTube.
 - Persist Playwright login sessions under `.profiles/<account>/<platform>`.
 - Schedule posts with cron expressions, daily times, or instant-post mode.
@@ -80,6 +82,9 @@ npm run dashboard
 ```
 
 Open http://127.0.0.1:3000.
+
+Start with the `Setup` view. It checks local dependencies and shows the exact
+pending folders where videos should be dropped for each platform.
 
 ## Configuration
 

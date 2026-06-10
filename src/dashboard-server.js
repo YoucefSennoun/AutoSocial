@@ -11,6 +11,7 @@ const { ProfileDownloadController } = require("./profile-download-controller");
 const { getDaemons, getAllStatus } = require("./daemon-registry");
 const { migrateQueueIfNeeded } = require("./migrate-queue");
 const { createDashboardRequestGuard } = require("./request-guard");
+const { buildSetupHealth, getAllowedSetupFolderPath } = require("./setup-health");
 const {
   startDashboardLoginSession: startTikTokLoginSession,
   getLoginSessionStatus: getTikTokLoginSessionStatus,
@@ -503,6 +504,32 @@ async function createServer() {
       res.json(allStatus);
     } catch (error) {
       res.status(500).json({ ok: false, error: error.message });
+    }
+  });
+
+  // First-run setup and health endpoints
+
+  app.get("/api/setup/health", async (req, res) => {
+    try {
+      res.json(await buildSetupHealth());
+    } catch (error) {
+      res.status(500).json({ ok: false, error: error.message });
+    }
+  });
+
+  app.post("/api/setup/open-folder", async (req, res) => {
+    try {
+      const active = await getActiveAccount();
+      const folderPath = getAllowedSetupFolderPath(req.body?.key, active.id);
+      if (!folderPath) {
+        return res.status(400).json({ ok: false, error: "Unsupported setup folder key." });
+      }
+
+      await fs.mkdir(folderPath, { recursive: true });
+      await openFolder(folderPath);
+      res.json({ ok: true, path: folderPath });
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
     }
   });
 

@@ -73,8 +73,12 @@ npm run dashboard
 
 Open http://127.0.0.1:3000.
 
+Start with the `Setup` view. It shows local dependency checks, saved platform
+sessions, and the exact pending folders for the active brand.
+
 The dashboard controls:
 
+- First-run setup and health checks
 - Account switching
 - Platform login sessions
 - TikTok, Instagram, and YouTube schedulers
