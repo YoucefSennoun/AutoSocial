@@ -20,6 +20,7 @@ test("clean debug targets only include screenshots and dashboard logs", () => {
       path.join(root, ".local", "dashboard.out.log"),
       path.join(root, "last-upload-error.png"),
       path.join(root, "last-youtube-upload-success.png"),
+      path.join(root, "qa-setup.png"),
     ];
     for (const target of expectedTargets) {
       touch(target);

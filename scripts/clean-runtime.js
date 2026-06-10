@@ -16,7 +16,11 @@ function collectCleanupTargets(root = projectRoot) {
       continue;
     }
 
-    if (/^last-.*\.png$/i.test(entry.name) || /^\.dashboard\..*\.log$/i.test(entry.name)) {
+    if (
+      /^last-.*\.png$/i.test(entry.name) ||
+      /^qa-.*\.png$/i.test(entry.name) ||
+      /^\.dashboard\..*\.log$/i.test(entry.name)
+    ) {
       targets.push(path.join(root, entry.name));
     }
   }

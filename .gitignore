@@ -36,6 +36,7 @@ user-assets/
 
 # Debug screenshots
 last-*.png
+qa-*.png
 .dashboard.*.log
 
 # Saved browser pages (dev reference, root-level only)
