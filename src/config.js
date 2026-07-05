@@ -58,9 +58,26 @@ const config = {
     projectRoot,
     process.env.YOUTUBE_PROFILE_DIR || ".profile-youtube"
   ),
+  pinterestQueueDir: path.resolve(
+    projectRoot,
+    process.env.PINTEREST_QUEUE_DIR || "queue/default/pinterest/pending"
+  ),
+  pinterestPostedDir: path.resolve(
+    projectRoot,
+    process.env.PINTEREST_POSTED_DIR || "queue/default/pinterest/posted"
+  ),
+  pinterestFailedDir: path.resolve(
+    projectRoot,
+    process.env.PINTEREST_FAILED_DIR || "queue/default/pinterest/failed"
+  ),
+  pinterestProfileDir: path.resolve(
+    projectRoot,
+    process.env.PINTEREST_PROFILE_DIR || ".profile-pinterest"
+  ),
   cronExpression: process.env.CRON_EXPRESSION || "0 */2 * * *",
   instagramCronExpression: process.env.INSTAGRAM_CRON_EXPRESSION || "0 */2 * * *",
   youtubeCronExpression: process.env.YOUTUBE_CRON_EXPRESSION || "0 */2 * * *",
+  pinterestCronExpression: process.env.PINTEREST_CRON_EXPRESSION || "0 */2 * * *",
   timezone: process.env.TZ || "UTC",
   browserLocale: process.env.BROWSER_LOCALE || "en-US",
   headless: getBoolean(process.env.HEADLESS, false),
@@ -77,6 +94,8 @@ const config = {
     process.env.INSTAGRAM_UPLOAD_URL || "https://www.instagram.com/create/style/",
   youtubeUploadPageUrl:
     process.env.YOUTUBE_UPLOAD_URL || "https://studio.youtube.com",
+  pinterestUploadPageUrl:
+    process.env.PINTEREST_UPLOAD_URL || "https://www.pinterest.com/pin-builder/",
   dashboardHost: process.env.DASHBOARD_HOST || "127.0.0.1",
   dashboardPort: Number(process.env.DASHBOARD_PORT || 3000),
   dashboardAllowRemote: getBoolean(process.env.DASHBOARD_ALLOW_REMOTE, false),
@@ -109,6 +128,7 @@ config.platformQueues = {
   tiktok: config.queueDir,
   instagram: config.instagramQueueDir,
   youtube: config.youtubeQueueDir,
+  pinterest: config.pinterestQueueDir,
 };
 
 module.exports = {

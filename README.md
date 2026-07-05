@@ -5,8 +5,8 @@
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json)
 
 AutoSocial Studio is a local, multi-account automation dashboard for short-form
-video workflows across TikTok, Instagram, and YouTube. It combines a local
-Express dashboard, Playwright-powered upload flows, per-account queues,
+video workflows across TikTok, Instagram, YouTube, and Pinterest. It combines a
+local Express dashboard, Playwright-powered upload flows, per-account queues,
 schedulers, yt-dlp downloader utilities, and an FFmpeg-based video uniquifier.
 
 This project is built for a local workstation. It is not a hosted SaaS app and
@@ -42,7 +42,9 @@ local control plane.
 - Manage multiple brands/accounts with isolated queues and browser sessions.
 - Use the First-Run Setup page to verify local dependencies, login sessions,
   and queue folders.
-- Post queued videos to TikTok, Instagram, and YouTube.
+- Post queued videos to TikTok, Instagram, YouTube, and Pinterest.
+- Post image pins to Pinterest with board selection, titles, descriptions,
+  and destination links.
 - Persist Playwright login sessions under `.profiles/<account>/<platform>`.
 - Schedule posts with cron expressions, daily times, or instant-post mode.
 - Download recent TikTok videos with yt-dlp and fan them out into queues.
@@ -93,7 +95,7 @@ workflow.
 
 Common settings:
 
-- `CRON_EXPRESSION`, `INSTAGRAM_CRON_EXPRESSION`, `YOUTUBE_CRON_EXPRESSION`
+- `CRON_EXPRESSION`, `INSTAGRAM_CRON_EXPRESSION`, `YOUTUBE_CRON_EXPRESSION`, `PINTEREST_CRON_EXPRESSION`
 - `TZ`, `BROWSER_LOCALE`
 - `HEADLESS`
 - `POST_DELAY_MS`, `POST_PUBLISH_HOLD_MS`, `FAILURE_HOLD_MS`
@@ -133,6 +135,9 @@ See [SECURITY.md](SECURITY.md) for more details.
 Open the dashboard, go to `Accounts`, and start a login session for each
 platform you want to use. Sessions are stored on disk and reused between runs.
 
+Login sessions for TikTok, Instagram, YouTube, and Pinterest are all managed
+through the dashboard Accounts view.
+
 The CLI `login` command is still TikTok-specific:
 
 ```bash
@@ -147,6 +152,7 @@ Queues are account-aware:
 queue/<account>/tiktok/pending
 queue/<account>/instagram/pending
 queue/<account>/youtube/pending
+queue/<account>/pinterest/pending
 ```
 
 Successful uploads move into `posted`; failed uploads move into `failed`.
@@ -158,6 +164,12 @@ Supported video extensions:
 - `.webm`
 - `.avi`
 - `.mkv`
+
+Pinterest additionally supports image pins with these extensions:
+
+- `.jpg` / `.jpeg`
+- `.png`
+- `.gif`
 
 Caption sidecars can use the same base filename:
 
@@ -184,7 +196,7 @@ Notes:
 - The dashboard is the preferred workflow.
 - `clean:debug` removes local debug screenshots and dashboard logs only.
 - `login`, `post`, and `daemon` are TikTok CLI flows.
-- Instagram and YouTube posting are managed through the dashboard.
+- Instagram, YouTube, and Pinterest posting are managed through the dashboard.
 - `uniquify` and `video-info` require FFmpeg and ffprobe.
 - `autodownload` requires yt-dlp.
 

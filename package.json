@@ -30,7 +30,8 @@
     "playwright",
     "tiktok",
     "instagram",
-    "youtube"
+    "youtube",
+    "pinterest"
   ],
   "author": "AutoSocial Studio contributors",
   "license": "MIT",

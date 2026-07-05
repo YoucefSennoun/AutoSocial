@@ -60,6 +60,10 @@
           <i class="ph ph-youtube-logo"></i>
           <span>YouTube</span>
         </button>
+        <button class="nav-item" data-view="pinterest">
+          <i class="ph ph-pinterest-logo"></i>
+          <span>Pinterest</span>
+        </button>
 
         <div class="nav-label">Tools</div>
         <button class="nav-item" data-view="uniquifier">
@@ -599,6 +603,119 @@
         </div>
       </section>
 
+      <!-- View: Pinterest -->
+      <section id="view-pinterest" class="view-section">
+        <header class="view-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="brand-icon" style="background:#E60023; width:40px; height:40px; font-size:24px;"><i
+                class="ph ph-pinterest-logo"></i></div>
+            <div>
+              <h2 style="margin:0;">Pinterest Pins</h2>
+              <span style="color:var(--text-muted); font-size:13px;">Manage your Pin schedule (video &amp; image)</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="pinRunBtn" class="control-btn-small primary"><i class="ph ph-play"></i> Run Once</button>
+            <button id="pinStartBtn" class="control-btn-small success"><i class="ph ph-play-circle"></i> Start</button>
+            <button id="pinStopBtn" class="control-btn-small danger"><i class="ph ph-stop-circle"></i> Stop</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-value" id="pinPendingCount">-</div>
+              <div class="stat-label">Pending Pins</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value success" id="pinPostedCount">-</div>
+              <div class="stat-label">Posted Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value error" id="pinFailedCount">-</div>
+              <div class="stat-label">Failed Total</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="pinSchedulerState">-</div>
+              <div class="stat-label">Scheduler State</div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Pinterest Scheduler</div>
+            <div class="input-group" style="margin-bottom:10px; flex-wrap:wrap;">
+              <select id="pinPlanType" class="control-input" style="max-width:180px;">
+                <option value="once">Once (run now)</option>
+                <option value="daily" selected>Daily</option>
+                <option value="dailyTimes">Daily at specific times</option>
+                <option value="weekly">Weekly</option>
+                <option value="every2h">Every 2 hours</option>
+                <option value="every3h">Every 3 hours</option>
+                <option value="every4h">Every 4 hours</option>
+                <option value="every6h">Every 6 hours</option>
+                <option value="every8h">Every 8 hours</option>
+                <option value="every12h">Every 12 hours</option>
+                <option value="custom">Custom Cron</option>
+              </select>
+              <input id="pinPlanTime" type="time" class="control-input" value="12:00" style="max-width:140px;">
+              <input id="pinPlanTimes" type="text" class="control-input" placeholder="e.g. 09:30, 13:15, 20:45"
+                style="display:none; min-width:260px;">
+              <select id="pinPlanWeekday" class="control-input" style="max-width:160px; display:none;">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+              <button id="pinPlanApplyBtn" class="control-btn-small primary">Apply</button>
+            </div>
+            <div class="input-group">
+              <input type="text" id="pinCronInput" class="control-input" placeholder="0 */2 * * *">
+              <button id="pinUpdateScheduleBtn" class="control-btn-small">Save Schedule</button>
+            </div>
+            <div
+              style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; color:var(--text-muted); font-size:13px;">
+              <span>Timezone: <span id="pinTimezoneLabel" class="mono">UTC</span></span>
+              <span>Last run: <span id="pinLastRunLabel" class="mono">Never</span></span>
+            </div>
+            <div
+              style="display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-color);">
+              <label class="toggle-switch">
+                <input type="checkbox" id="pinInstantPostToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Instant Post</div>
+                <div style="color:var(--text-muted); font-size:12px;">Post immediately when a new file lands in the
+                  queue</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+              <label class="toggle-switch">
+                <input type="checkbox" id="pinRandomQueueToggle">
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-weight:600; font-size:13px;">Random Queue Order (Global)</div>
+                <div style="color:var(--text-muted); font-size:12px;">Pick a random pending file each run instead of the first alphabetic one. Captions still follow the chosen media.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Pinterest Queue</div>
+            <div class="queue-list" id="pinQueueList"></div>
+          </div>
+
+          <div class="card full-width">
+            <div class="card-title">Pinterest Live Logs</div>
+            <div class="logs-container" id="pinLogsContainer"></div>
+          </div>
+        </div>
+      </section>
+
       <!-- View: Video Uniquifier -->
       <section id="view-uniquifier" class="view-section">
         <header class="view-header">
@@ -759,6 +876,9 @@
                   </label>
                   <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
                     <input type="checkbox" id="adPlatYoutube" value="youtube"> YouTube
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" id="adPlatPinterest" value="pinterest"> Pinterest
                   </label>
                 </div>
               </div>

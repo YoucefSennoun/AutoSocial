@@ -14,6 +14,7 @@ const PLATFORM_LABELS = {
   tiktok: "TikTok",
   instagram: "Instagram",
   youtube: "YouTube",
+  pinterest: "Pinterest",
 };
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mov", ".webm", ".avi", ".mkv"]);
@@ -105,6 +106,7 @@ function getAllowedSetupFolderPath(key, accountId) {
     tiktokPending: queueDirs.tiktok.pending,
     instagramPending: queueDirs.instagram.pending,
     youtubePending: queueDirs.youtube.pending,
+    pinterestPending: queueDirs.pinterest.pending,
     uniquifierInput: config.uniquifyInputDir,
     uniquifierOutput: config.uniquifyOutputDir,
   };

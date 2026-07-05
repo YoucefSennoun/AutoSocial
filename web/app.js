@@ -54,6 +54,7 @@ const UI = {
     tiktok: { loginOpen: false, sessionSaved: false, schedulerRunning: false },
     instagram: { loginOpen: false, sessionSaved: false, schedulerRunning: false },
     youtube: { loginOpen: false, sessionSaved: false, schedulerRunning: false },
+    pinterest: { loginOpen: false, sessionSaved: false, schedulerRunning: false },
     brands: [],
     activeBrandId: null,
     activeBrandName: "",
@@ -62,6 +63,7 @@ const UI = {
     tiktok: false,
     instagram: false,
     youtube: false,
+    pinterest: false,
   },
 
   els: {
@@ -155,6 +157,26 @@ const UI = {
     ytRandomQueueToggle: document.getElementById("ytRandomQueueToggle"),
     ytQueueList: document.getElementById("ytQueueList"),
     ytLogsContainer: document.getElementById("ytLogsContainer"),
+    pinRunBtn: document.getElementById("pinRunBtn"),
+    pinStartBtn: document.getElementById("pinStartBtn"),
+    pinStopBtn: document.getElementById("pinStopBtn"),
+    pinCronInput: document.getElementById("pinCronInput"),
+    pinUpdateScheduleBtn: document.getElementById("pinUpdateScheduleBtn"),
+    pinPlanType: document.getElementById("pinPlanType"),
+    pinPlanTime: document.getElementById("pinPlanTime"),
+    pinPlanTimes: document.getElementById("pinPlanTimes"),
+    pinPlanWeekday: document.getElementById("pinPlanWeekday"),
+    pinPlanApplyBtn: document.getElementById("pinPlanApplyBtn"),
+    pinPendingCount: document.getElementById("pinPendingCount"),
+    pinPostedCount: document.getElementById("pinPostedCount"),
+    pinFailedCount: document.getElementById("pinFailedCount"),
+    pinSchedulerState: document.getElementById("pinSchedulerState"),
+    pinTimezoneLabel: document.getElementById("pinTimezoneLabel"),
+    pinLastRunLabel: document.getElementById("pinLastRunLabel"),
+    pinInstantPostToggle: document.getElementById("pinInstantPostToggle"),
+    pinRandomQueueToggle: document.getElementById("pinRandomQueueToggle"),
+    pinQueueList: document.getElementById("pinQueueList"),
+    pinLogsContainer: document.getElementById("pinLogsContainer"),
 
     uniqStartBtn: document.getElementById("uniqStartBtn"),
     uniqStopBtn: document.getElementById("uniqStopBtn"),
@@ -179,6 +201,7 @@ const UI = {
     adPlatTiktok: document.getElementById('adPlatTiktok'),
     adPlatInstagram: document.getElementById("adPlatInstagram"),
     adPlatYoutube: document.getElementById("adPlatYoutube"),
+    adPlatPinterest: document.getElementById("adPlatPinterest"),
     adSaveSettingsBtn: document.getElementById("adSaveSettingsBtn"),
     adWatcherState: document.getElementById("adWatcherState"),
     adTotalDownloaded: document.getElementById("adTotalDownloaded"),
@@ -204,6 +227,7 @@ const UI = {
     this.updateFriendlyScheduleVisibility("tiktok");
     this.updateFriendlyScheduleVisibility("instagram");
     this.updateFriendlyScheduleVisibility("youtube");
+    this.updateFriendlyScheduleVisibility("pinterest");
     this.startPolling();
     this.renderAccounts();
   },
@@ -436,6 +460,62 @@ const UI = {
     if (this.els.ytRandomQueueToggle) {
       this.els.ytRandomQueueToggle.addEventListener("change", () =>
         this.handleRandomQueueToggle(this.els.ytRandomQueueToggle.checked)
+      );
+    }
+    // Pinterest
+    if (this.els.pinStartBtn) {
+      this.els.pinStartBtn.addEventListener("click", () =>
+        this.handleAction("/api/pinterest/start")
+      );
+    }
+    if (this.els.pinStopBtn) {
+      this.els.pinStopBtn.addEventListener("click", () =>
+        this.handleAction("/api/pinterest/stop")
+      );
+    }
+    if (this.els.pinRunBtn) {
+      this.els.pinRunBtn.addEventListener("click", () =>
+        this.handleAction("/api/pinterest/run-once")
+      );
+    }
+    if (this.els.pinUpdateScheduleBtn) {
+      this.els.pinUpdateScheduleBtn.addEventListener("click", () =>
+        this.handleUpdateSchedule(false, false, false, true)
+      );
+    }
+    if (this.els.pinPlanType) {
+      this.els.pinPlanType.addEventListener("change", () =>
+        this.handleFriendlyScheduleDraftChange("pinterest")
+      );
+    }
+    if (this.els.pinPlanTime) {
+      this.els.pinPlanTime.addEventListener("change", () =>
+        this.handleFriendlyScheduleDraftChange("pinterest")
+      );
+    }
+    if (this.els.pinPlanWeekday) {
+      this.els.pinPlanWeekday.addEventListener("change", () =>
+        this.handleFriendlyScheduleDraftChange("pinterest")
+      );
+    }
+    if (this.els.pinPlanTimes) {
+      this.els.pinPlanTimes.addEventListener("input", () =>
+        this.handleFriendlyScheduleDraftChange("pinterest")
+      );
+    }
+    if (this.els.pinPlanApplyBtn) {
+      this.els.pinPlanApplyBtn.addEventListener("click", () =>
+        this.handleFriendlySchedule("pinterest")
+      );
+    }
+    if (this.els.pinInstantPostToggle) {
+      this.els.pinInstantPostToggle.addEventListener("change", () =>
+        this.handleInstantPostToggle("pinterest", this.els.pinInstantPostToggle.checked)
+      );
+    }
+    if (this.els.pinRandomQueueToggle) {
+      this.els.pinRandomQueueToggle.addEventListener("change", () =>
+        this.handleRandomQueueToggle(this.els.pinRandomQueueToggle.checked)
       );
     }
     if (this.els.accountsTableBody) {
@@ -752,6 +832,13 @@ const UI = {
         weekday: this.els.ytPlanWeekday,
         cronInput: this.els.ytCronInput,
       },
+      pinterest: {
+        type: this.els.pinPlanType,
+        time: this.els.pinPlanTime,
+        times: this.els.pinPlanTimes,
+        weekday: this.els.pinPlanWeekday,
+        cronInput: this.els.pinCronInput,
+      },
     };
     return map[platform];
   },
@@ -761,6 +848,7 @@ const UI = {
       tiktok: { schedule: "/api/schedule", runOnce: "/api/run-once" },
       instagram: { schedule: "/api/instagram/schedule", runOnce: "/api/instagram/run-once" },
       youtube: { schedule: "/api/youtube/schedule", runOnce: "/api/youtube/run-once" },
+      pinterest: { schedule: "/api/pinterest/schedule", runOnce: "/api/pinterest/run-once" },
     };
     return map[platform];
   },
@@ -957,23 +1045,30 @@ const UI = {
   async handleUpdateSchedule(
     fromTikTokView,
     fromInstagramView = false,
-    fromYouTubeView = false
+    fromYouTubeView = false,
+    fromPinterestView = false
   ) {
-    const platform = fromYouTubeView
-      ? "youtube"
-      : fromInstagramView
-        ? "instagram"
-        : "tiktok";
-    const input = platform === "youtube"
-      ? this.els.ytCronInput
-      : platform === "instagram"
-        ? this.els.igCronInput
-        : this.els.ttCronInput;
-    const saveBtn = platform === "youtube"
-      ? this.els.ytUpdateScheduleBtn
-      : platform === "instagram"
-        ? this.els.igUpdateScheduleBtn
-        : this.els.ttUpdateScheduleBtn;
+    const platform = fromPinterestView
+      ? "pinterest"
+      : fromYouTubeView
+        ? "youtube"
+        : fromInstagramView
+          ? "instagram"
+          : "tiktok";
+    const input = platform === "pinterest"
+      ? this.els.pinCronInput
+      : platform === "youtube"
+        ? this.els.ytCronInput
+        : platform === "instagram"
+          ? this.els.igCronInput
+          : this.els.ttCronInput;
+    const saveBtn = platform === "pinterest"
+      ? this.els.pinUpdateScheduleBtn
+      : platform === "youtube"
+        ? this.els.ytUpdateScheduleBtn
+        : platform === "instagram"
+          ? this.els.igUpdateScheduleBtn
+          : this.els.ttUpdateScheduleBtn;
     if (!input || !saveBtn) return;
 
     const expression = input.value.trim();
@@ -986,11 +1081,13 @@ const UI = {
         saveBtn.textContent = defaultLabel;
       }, 2000);
 
-      const endpoint = fromYouTubeView
-        ? "/api/youtube/schedule"
-        : fromInstagramView
-          ? "/api/instagram/schedule"
-          : "/api/schedule";
+      const endpoint = fromPinterestView
+        ? "/api/pinterest/schedule"
+        : fromYouTubeView
+          ? "/api/youtube/schedule"
+          : fromInstagramView
+            ? "/api/instagram/schedule"
+            : "/api/schedule";
       await API.post(endpoint, { expression });
       this.markScheduleDraftDirty(platform, false);
       this.refresh();
@@ -1037,11 +1134,13 @@ const UI = {
       tiktok: "/api/instant-post",
       instagram: "/api/instagram/instant-post",
       youtube: "/api/youtube/instant-post",
+      pinterest: "/api/pinterest/instant-post",
     };
     const toggleMap = {
       tiktok: this.els.ttInstantPostToggle,
       instagram: this.els.igInstantPostToggle,
       youtube: this.els.ytInstantPostToggle,
+      pinterest: this.els.pinInstantPostToggle,
     };
     try {
       await API.post(endpointMap[platform], { enabled });
@@ -1111,11 +1210,13 @@ const UI = {
       tiktok: "/api/tiktok/login",
       instagram: "/api/instagram/login",
       youtube: "/api/youtube/login",
+      pinterest: "/api/pinterest/login",
     };
     const labelMap = {
       tiktok: "TikTok",
       instagram: "Instagram",
       youtube: "YouTube",
+      pinterest: "Pinterest",
     };
     try {
       const result = await API.post(endpointMap[platform]);
@@ -1135,11 +1236,13 @@ const UI = {
       tiktok: "/api/tiktok/login/close",
       instagram: "/api/instagram/login/close",
       youtube: "/api/youtube/login/close",
+      pinterest: "/api/pinterest/login/close",
     };
     const labelMap = {
       tiktok: "TikTok",
       instagram: "Instagram",
       youtube: "YouTube",
+      pinterest: "Pinterest",
     };
     try {
       const result = await API.post(endpointMap[platform]);
@@ -1181,15 +1284,19 @@ const UI = {
         tiktokLoginStatus,
         instagramLoginStatus,
         youtubeLoginStatus,
+        pinterestStatus,
+        pinterestLoginStatus,
       ] = await Promise.all([
         API.get("/api/status"),
         API.get("/api/instagram/status"),
         API.get("/api/youtube/status"),
+        API.get("/api/pinterest/status"),
         API.get("/api/uniquifier/status"),
         API.get("/api/accounts"),
         API.get("/api/tiktok/login/status"),
         API.get("/api/instagram/login/status"),
         API.get("/api/youtube/login/status"),
+        API.get("/api/pinterest/login/status"),
       ]);
       // Fetch autodownload status in parallel but don't block others
       API.get("/api/autodownload/status").then((ad) => this.renderAutoDownloadStatus(ad)).catch(() => { });
@@ -1199,6 +1306,7 @@ const UI = {
       this.renderStatus(status);
       this.renderInstagramStatus(instagramStatus);
       this.renderYouTubeStatus(youtubeStatus);
+      this.renderPinterestStatus(pinterestStatus);
       this.renderUniquifierStatus(uniquifier);
       this.renderBrandSelector(accounts);
       this.accountState = {
@@ -1216,6 +1324,11 @@ const UI = {
           loginOpen: Boolean(youtubeLoginStatus?.open),
           sessionSaved: Boolean(youtubeLoginStatus?.saved),
           schedulerRunning: Boolean(youtubeStatus?.running),
+        },
+        pinterest: {
+          loginOpen: Boolean(pinterestLoginStatus?.open),
+          sessionSaved: Boolean(pinterestLoginStatus?.saved),
+          schedulerRunning: Boolean(pinterestStatus?.running),
         },
         brands: accounts?.accounts || [],
         activeBrandId: accounts?.activeAccountId || null,
@@ -1292,6 +1405,12 @@ const UI = {
         icon: "ph-youtube-logo",
         color: "#FF0000",
         bg: "#FF0000",
+      },
+      pinterest: {
+        label: "Pinterest",
+        icon: "ph-pinterest-logo",
+        color: "#E60023",
+        bg: "#E60023",
       },
     };
 
@@ -1442,7 +1561,9 @@ const UI = {
           ? "#ff0050"
           : logEntry.platform === "Instagram"
             ? "#E1306C"
-            : "#FF0000";
+            : logEntry.platform === "YouTube"
+              ? "#FF0000"
+              : "#E60023";
         return `<div class="log-entry" style="color:${color}">
           <span style="opacity:0.5;">${escapeHtml(time)}</span>
           <span style="color:${platformColor}; font-weight:600; font-size:11px;">[${escapeHtml(logEntry.platform)}]</span>
@@ -1707,6 +1828,81 @@ const UI = {
     if (this.els.ytLastRunLabel) this.els.ytLastRunLabel.textContent = lastRunText;
   },
 
+  renderPinterestStatus(data) {
+    const pending = data.queue?.counts?.pending ?? 0;
+    const posted = data.queue?.counts?.posted ?? 0;
+    const failed = data.queue?.counts?.failed ?? 0;
+    const pendingVideos = data.queue?.pendingVideos || [];
+    const timezone = data.timezone || "UTC";
+    const lastRunText = data.lastRunAt ? new Date(data.lastRunAt).toLocaleString() : "Never";
+
+    if (this.els.pinPendingCount) this.els.pinPendingCount.textContent = pending;
+    if (this.els.pinPostedCount) this.els.pinPostedCount.textContent = posted;
+    if (this.els.pinFailedCount) this.els.pinFailedCount.textContent = failed;
+    if (this.els.pinSchedulerState) {
+      this.els.pinSchedulerState.textContent = data.running ? "Running" : "Stopped";
+      this.els.pinSchedulerState.classList.toggle("success", Boolean(data.running));
+      this.els.pinSchedulerState.classList.toggle("error", !data.running);
+    }
+
+    // Sync instant-post toggle
+    if (this.els.pinInstantPostToggle && document.activeElement !== this.els.pinInstantPostToggle) {
+      this.els.pinInstantPostToggle.checked = Boolean(data.instantPost);
+    }
+
+    if (this.els.pinRandomQueueToggle && document.activeElement !== this.els.pinRandomQueueToggle) {
+      this.els.pinRandomQueueToggle.checked = Boolean(data.randomQueueOrder);
+    }
+
+    const logsHtml = (data.logs || [])
+      .slice()
+      .reverse()
+      .map(
+        (logEntry) => `
+      <div class="log-entry">
+        <span class="log-time">${logEntry.at.split("T")[1].split(".")[0]}</span>
+        <span class="log-msg ${logEntry.level === "error" ? "log-error" : ""}">${escapeHtml(logEntry.message)}</span>
+      </div>
+    `
+      )
+      .join("");
+    this.updateLogContainer(this.els.pinLogsContainer, logsHtml);
+
+    const queueHtml = pendingVideos.length
+      ? pendingVideos
+        .map((video) => {
+          const videoName = typeof video === "string" ? video : video.name;
+          const hasCaption = typeof video === "object" && video.hasCaption;
+          const isImage = typeof video === "object" && video.isImage;
+          const icon = isImage ? "ph-image" : "ph-file-video";
+          return `
+      <div class="queue-item">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="${icon}" style="font-size:20px;"></i>
+          <span>${escapeHtml(videoName)}</span>
+          ${hasCaption ? '<span class="status-badge" style="background:rgba(255,255,255,0.1); color:#ccc; border:1px solid #444; margin-left:8px;"><i class="ph ph-text-align-left"></i> Caption</span>' : ''}
+          ${isImage ? '<span class="status-badge" style="background:rgba(255,255,255,0.1); color:#ccc; border:1px solid #444; margin-left:8px;"><i class="ph ph-image"></i> Image</span>' : ''}
+        </div>
+        <span class="status-badge active">Pending</span>
+      </div>
+    `;
+        })
+        .join("")
+      : '<div style="text-align:center; padding:20px; color:#666;">Queue is empty</div>';
+    if (this.els.pinQueueList) this.els.pinQueueList.innerHTML = queueHtml;
+
+    if (
+      this.els.pinCronInput &&
+      document.activeElement !== this.els.pinCronInput &&
+      !this.isScheduleDraftDirty("pinterest")
+    ) {
+      this.els.pinCronInput.value = data.cronExpression || "";
+    }
+    this.applySchedulePlanFromStatus("pinterest", data);
+    if (this.els.pinTimezoneLabel) this.els.pinTimezoneLabel.textContent = timezone;
+    if (this.els.pinLastRunLabel) this.els.pinLastRunLabel.textContent = lastRunText;
+  },
+
   renderUniquifierStatus(data) {
     if (!data) return;
 
@@ -1810,6 +2006,11 @@ const UI = {
         platform: "YouTube",
         icon: "ph-youtube-logo",
       },
+      {
+        platformKey: "pinterest",
+        platform: "Pinterest",
+        icon: "ph-pinterest-logo",
+      },
     ];
 
     const activeCount = rows.filter(
@@ -1868,6 +2069,7 @@ const UI = {
     if (this.els.adPlatTiktok?.checked) platforms.push("tiktok");
     if (this.els.adPlatInstagram?.checked) platforms.push("instagram");
     if (this.els.adPlatYoutube?.checked) platforms.push("youtube");
+    if (this.els.adPlatPinterest?.checked) platforms.push("pinterest");
 
     try {
       await API.post("/api/autodownload/configure", {
@@ -1914,6 +2116,7 @@ const UI = {
       if (this.els.adPlatTiktok) this.els.adPlatTiktok.checked = platforms.includes("tiktok");
       if (this.els.adPlatInstagram) this.els.adPlatInstagram.checked = platforms.includes("instagram");
       if (this.els.adPlatYoutube) this.els.adPlatYoutube.checked = platforms.includes("youtube");
+      if (this.els.adPlatPinterest) this.els.adPlatPinterest.checked = platforms.includes("pinterest");
 
       // Logs
       const logsHtml = (data.logs || [])

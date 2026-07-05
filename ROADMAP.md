@@ -10,11 +10,29 @@ builders shipping products with AI coding tools.
   queue folders, FFmpeg, Playwright Chromium, and yt-dlp.
 - Improve dashboard empty states so new users can understand the workflow
   without reading every setup step first.
-- Add screenshot-based troubleshooting guides for TikTok, Instagram, and
-  YouTube selector breakage.
+- Add screenshot-based troubleshooting guides for TikTok, Instagram, YouTube,
+  and Pinterest selector breakage.
 - Expand local tests around dashboard settings, account state, queue migration,
   and downloader configuration.
 - Add release notes and a lightweight changelog process.
+
+### Pinterest Platform Integration
+
+- Build a Pinterest uploader with Playwright-based browser automation for
+  video and image pin creation, including board selection, title/description
+  fields, and link attachment.
+- Add Pinterest queue reader, post service, and daemon controller following
+  the established per-platform pattern (queue, uploader, post-service,
+  daemon-controller).
+- Add Pinterest login session management with persistent Chromium profiles
+  under `.profiles/<account>/pinterest/`.
+- Register Pinterest in the platform config, account manager, daemon
+  registry, and setup health checks.
+- Add Pinterest scheduler support with cron expressions and daily-time plans.
+- Extend the Supported video extensions section to include `.jpg`, `.jpeg`,
+  `.png`, and `.gif` for Pinterest image pin support.
+- Add Pinterest board metadata to the dashboard: display saved boards during
+  upload and allow users to pick a target board for each pin.
 
 ## Responsible Automation
 
@@ -34,6 +52,12 @@ builders shipping products with AI coding tools.
 - Add a local review queue before scheduled posts are allowed to publish.
 - Improve the video uniquifier controls with preview metadata and clearer
   recipe options.
+- Extend the queue system to support image assets (`.jpg`, `.jpeg`, `.png`,
+  `.gif`) for Pinterest image pin workflows alongside existing video support.
+- Add Pinterest board management to the dashboard: create, list, and select
+  boards when queuing or scheduling pins.
+- Support rich pin metadata including titled descriptions, destination links,
+  and alt text for Pinterest pins.
 
 ## Maintainer Tooling
 

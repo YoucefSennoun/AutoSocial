@@ -28,6 +28,11 @@ const {
   closeLoginSession: closeYouTubeLoginSession,
 } = require("./youtube-uploader");
 const {
+  startLoginSession: startPinterestLoginSession,
+  getLoginSessionStatus: getPinterestLoginSessionStatus,
+  closeLoginSession: closePinterestLoginSession,
+} = require("./pinterest-uploader");
+const {
   getState,
   addAccount,
   selectAccount,
@@ -490,6 +495,98 @@ async function createServer() {
   app.post("/api/youtube/login/close", async (req, res) => {
     try {
       const result = await closeYouTubeLoginSession();
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
+    }
+  });
+
+  // Pinterest endpoints (profile-aware)
+
+  app.get("/api/pinterest/status", async (req, res) => {
+    const daemons = await getActiveDaemons();
+    const status = await daemons.pinterest.getStatus();
+    res.json(status);
+  });
+
+  app.post("/api/pinterest/start", async (req, res) => {
+    const daemons = await getActiveDaemons();
+    const result = daemons.pinterest.start();
+    res.json(result);
+  });
+
+  app.post("/api/pinterest/stop", async (req, res) => {
+    const daemons = await getActiveDaemons();
+    const result = daemons.pinterest.stop();
+    res.json(result);
+  });
+
+  app.post("/api/pinterest/run-once", async (req, res) => {
+    const daemons = await getActiveDaemons();
+    const result = await daemons.pinterest.runOnce("dashboard");
+    res.json(result);
+  });
+
+  app.post("/api/pinterest/schedule", async (req, res) => {
+    try {
+      const { expression } = req.body;
+      if (!expression) {
+        return res.status(400).json({ ok: false, error: "Missing expression" });
+      }
+      const daemons = await getActiveDaemons();
+      const result = await daemons.pinterest.setSchedule(expression);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
+    }
+  });
+
+  app.post("/api/pinterest/schedule-plan", async (req, res) => {
+    try {
+      const { type, times } = req.body || {};
+      if (type !== "daily-times") {
+        return res.status(400).json({ ok: false, error: "Unsupported schedule plan type." });
+      }
+      const daemons = await getActiveDaemons();
+      const result = await daemons.pinterest.setDailyTimes(times);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
+    }
+  });
+
+  app.post("/api/pinterest/instant-post", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      if (typeof enabled !== "boolean") {
+        return res.status(400).json({ ok: false, error: "Missing 'enabled' (boolean)" });
+      }
+      const daemons = await getActiveDaemons();
+      const result = await daemons.pinterest.setInstantPost(enabled);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
+    }
+  });
+
+  // Login endpoints (Pinterest)
+
+  app.post("/api/pinterest/login", async (req, res) => {
+    try {
+      const result = await startPinterestLoginSession();
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
+    }
+  });
+
+  app.get("/api/pinterest/login/status", async (req, res) => {
+    res.json(await getPinterestLoginSessionStatus());
+  });
+
+  app.post("/api/pinterest/login/close", async (req, res) => {
+    try {
+      const result = await closePinterestLoginSession();
       res.json(result);
     } catch (error) {
       res.status(400).json({ ok: false, error: error.message });

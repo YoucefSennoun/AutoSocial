@@ -8,6 +8,7 @@ const LEGACY_PROFILE_DIRS = {
   tiktok: config.profileDir,
   instagram: config.instagramProfileDir,
   youtube: config.youtubeProfileDir,
+  pinterest: config.pinterestProfileDir,
 };
 
 let state = {
@@ -80,7 +81,7 @@ async function getState() {
 
 // Queue directory helpers
 
-const PLATFORMS = ["tiktok", "instagram", "youtube"];
+const PLATFORMS = ["tiktok", "instagram", "youtube", "pinterest"];
 const SUBDIRS = ["pending", "posted", "failed"];
 
 function getAccountQueueDirs(accountId) {
