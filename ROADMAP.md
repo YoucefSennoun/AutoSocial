@@ -16,23 +16,12 @@ builders shipping products with AI coding tools.
   and downloader configuration.
 - Add release notes and a lightweight changelog process.
 
-### Pinterest Platform Integration
+### ✅ Pinterest Platform Integration — Completed
 
-- Build a Pinterest uploader with Playwright-based browser automation for
-  video and image pin creation, including board selection, title/description
-  fields, and link attachment.
-- Add Pinterest queue reader, post service, and daemon controller following
-  the established per-platform pattern (queue, uploader, post-service,
-  daemon-controller).
-- Add Pinterest login session management with persistent Chromium profiles
-  under `.profiles/<account>/pinterest/`.
-- Register Pinterest in the platform config, account manager, daemon
-  registry, and setup health checks.
-- Add Pinterest scheduler support with cron expressions and daily-time plans.
-- Extend the Supported video extensions section to include `.jpg`, `.jpeg`,
-  `.png`, and `.gif` for Pinterest image pin support.
-- Add Pinterest board metadata to the dashboard: display saved boards during
-  upload and allow users to pick a target board for each pin.
+Pinterest is fully integrated with the same per-platform pattern:
+`pinterest-queue.js`, `pinterest-uploader.js`, `pinterest-post-service.js`,
+and `pinterest-daemon-controller.js`. All features (login, video/image pin
+creation, scheduling, queue management) are available through the dashboard.
 
 ## Responsible Automation
 

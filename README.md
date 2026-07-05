@@ -51,17 +51,23 @@ local control plane.
 - Scan/download TikTok profiles into `autodownload/profile_downloads`.
 - Run FFmpeg-based video uniquification from the dashboard or CLI, with an
   optional user-provided logo overlay.
+- Auto-download Pinterest image and video content alongside TikTok.
 
 ## Requirements
 
 - Node.js 18+
 - npm
 - Playwright Chromium
-- FFmpeg and ffprobe in `PATH`
+- FFmpeg and ffprobe (auto-detected from PATH or Playwright's bundled copy on Windows)
 - Optional: `yt-dlp.exe` in `autodownload/` for downloader features
 
 Windows is the primary target for the bundled `yt-dlp.exe` workflow, but the
 dashboard and core Node services are ordinary Node.js.
+
+> **FFmpeg on Windows:** The project automatically detects Playwright's bundled
+> FFmpeg at `%USERPROFILE%\AppData\Local\ms-playwright\ffmpeg-1011\` as a
+> fallback. You don't need a separate FFmpeg installation if Playwright is
+> installed.
 
 ## Quick Start
 
@@ -85,8 +91,9 @@ npm run dashboard
 
 Open http://127.0.0.1:3000.
 
-Start with the `Setup` view. It checks local dependencies and shows the exact
-pending folders where videos should be dropped for each platform.
+Start with the `Setup` view. It checks all local dependencies (Node.js,
+Playwright Chromium, FFmpeg, ffprobe) and shows the exact pending folders
+where media files should be dropped for each platform.
 
 ## Configuration
 
@@ -96,6 +103,7 @@ workflow.
 Common settings:
 
 - `CRON_EXPRESSION`, `INSTAGRAM_CRON_EXPRESSION`, `YOUTUBE_CRON_EXPRESSION`, `PINTEREST_CRON_EXPRESSION`
+- `PINTEREST_UPLOAD_URL`
 - `TZ`, `BROWSER_LOCALE`
 - `HEADLESS`
 - `POST_DELAY_MS`, `POST_PUBLISH_HOLD_MS`, `FAILURE_HOLD_MS`
@@ -157,7 +165,20 @@ queue/<account>/pinterest/pending
 
 Successful uploads move into `posted`; failed uploads move into `failed`.
 
-Supported video extensions:
+Browser profiles are stored per-account and per-platform:
+
+```text
+.profiles/<account>/tiktok
+.profiles/<account>/instagram
+.profiles/<account>/youtube
+.profiles/<account>/pinterest
+```
+
+Persistent profiles keep you logged in across dashboard restarts.
+
+### Supported Media Formats
+
+**Video** (all platforms):
 
 - `.mp4`
 - `.mov`
@@ -165,16 +186,20 @@ Supported video extensions:
 - `.avi`
 - `.mkv`
 
-Pinterest additionally supports image pins with these extensions:
+**Images** (Pinterest only):
 
 - `.jpg` / `.jpeg`
 - `.png`
 - `.gif`
 
-Caption sidecars can use the same base filename:
+### Captions
 
-- `.description`
+Caption sidecars use the same base filename as the media file:
+
+- `.description` (preferred)
 - `.txt`
+
+Example: `my-video.mp4` + `my-video.description`
 
 ## Commands
 
@@ -191,11 +216,22 @@ npm run video-info -- --video "C:\path\video.mp4"
 npm run autodownload
 ```
 
+### Dashboard Pages
+
+| Page | Description |
+|------|-------------|
+| **Overview** | At-a-glance status of all platforms and pending queue counts |
+| **Accounts** | Add/select accounts, start/close login sessions per platform |
+| **Setup** | Dependency health checks, open queue and profile folders |
+| **TikTok / Instagram / YouTube / Pinterest** | Platform controls, scheduler config, queue list with live logs |
+| **Uniquifier** | FFmpeg-based video deduplication and logo overlay |
+| **Settings** | Auto-download, runtime env vars, default caption, sound query |
+
 Notes:
 
-- The dashboard is the preferred workflow.
+- The dashboard is the preferred workflow for all platforms.
 - `clean:debug` removes local debug screenshots and dashboard logs only.
-- `login`, `post`, and `daemon` are TikTok CLI flows.
+- `login`, `post`, and `daemon` are TikTok-specific CLI flows.
 - Instagram, YouTube, and Pinterest posting are managed through the dashboard.
 - `uniquify` and `video-info` require FFmpeg and ffprobe.
 - `autodownload` requires yt-dlp.
