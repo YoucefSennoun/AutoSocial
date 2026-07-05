@@ -19,7 +19,22 @@ const PLATFORM_LABELS = {
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mov", ".webm", ".avi", ".mkv"]);
 
+/**
+ * Try to find a command, falling back to Playwright's bundled FFmpeg directory.
+ */
 function commandWorks(command, args, cwd = config.projectRoot) {
+  // Ensure Playwright's bundled FFmpeg dir is in PATH for ffmpeg/ffprobe lookups
+  if (command === "ffmpeg" || command === "ffprobe") {
+    const playwrightFfmpegDir = path.join(
+      require("os").homedir(),
+      "AppData", "Local", "ms-playwright", "ffmpeg-1011"
+    );
+    const exePath = path.join(playwrightFfmpegDir, `${command}.exe`);
+    if (fs.existsSync(exePath)) {
+      process.env.PATH = playwrightFfmpegDir + path.delimiter + process.env.PATH;
+    }
+  }
+
   const candidates =
     process.platform === "win32" && !/\.(cmd|exe)$/i.test(command)
       ? [command, `${command}.cmd`, `${command}.exe`]

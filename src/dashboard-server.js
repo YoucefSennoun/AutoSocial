@@ -4,6 +4,16 @@ const fs = require("fs/promises");
 const { spawn } = require("child_process");
 const express = require("express");
 const { config } = require("./config");
+
+// Ensure Playwright's bundled FFmpeg is in PATH
+const ffmpegDir = path.join(os.homedir(), "AppData", "Local", "ms-playwright", "ffmpeg-1011");
+const ffmpegExe = path.join(ffmpegDir, "ffmpeg.exe");
+if (require("fs").existsSync(ffmpegExe)) {
+  process.env.PATH = ffmpegDir + path.delimiter + process.env.PATH;
+  console.log("[ffmpeg] Added to PATH:", ffmpegDir);
+} else {
+  console.log("[ffmpeg] NOT found at:", ffmpegExe);
+}
 const { ensureDirectories } = require("./fs-utils");
 const { UniquifierController } = require("./uniquifier-controller");
 const { AutoDownloadController } = require("./autodownload-controller");

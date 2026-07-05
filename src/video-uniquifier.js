@@ -4,6 +4,21 @@ const fs = require("fs/promises");
 const crypto = require("crypto");
 const os = require("os");
 
+/**
+ * Resolve ffmpeg/ffprobe binary path, falling back to Playwright's bundled copy.
+ */
+function resolveBinary(name) {
+  // Check if it's already in PATH
+  const { spawnSync } = require("child_process");
+  const test = spawnSync(name, ["-version"], { encoding: "utf8", windowsHide: true });
+  if (test.status === 0) return name;
+  // Fallback: Playwright bundled FFmpeg
+  const fallback = path.join(os.homedir(), "AppData", "Local", "ms-playwright", "ffmpeg-1011", `${name}.exe`);
+  const fsSync = require("fs");
+  if (fsSync.existsSync(fallback)) return fallback;
+  return name; // give up, let it fail naturally
+}
+
 function randFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
@@ -16,9 +31,12 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+const FFMPEG_BIN = resolveBinary("ffmpeg");
+const FFPROBE_BIN = resolveBinary("ffprobe");
+
 function runFfmpeg(args) {
   return new Promise((resolve, reject) => {
-    execFile("ffmpeg", args, { maxBuffer: 50 * 1024 * 1024 }, (error, stdout, stderr) => {
+    execFile(FFMPEG_BIN, args, { maxBuffer: 50 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
         reject(new Error(`ffmpeg failed: ${error.message}\n${stderr}`));
         return;
@@ -30,7 +48,7 @@ function runFfmpeg(args) {
 
 function runFfprobe(args) {
   return new Promise((resolve, reject) => {
-    execFile("ffprobe", args, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+    execFile(FFPROBE_BIN, args, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
         reject(new Error(`ffprobe failed: ${error.message}\n${stderr}`));
         return;
